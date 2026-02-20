@@ -23,7 +23,7 @@ The test script runs **three suites**, one per cluster subscription type (OKE, O
 | `csv-invalid-empty-annotation.yaml` | "" | FAIL | FAIL | FAIL |
 | `csv-invalid-unknown-subscription.yaml` | ["Some Other Product"] | FAIL | FAIL | FAIL |
 
-- **PASS** = `kubectl apply --dry-run=server` succeeds (operator allowed).
+- **PASS** = `oc apply --dry-run=server` succeeds (operator allowed).
 - **FAIL** = request denied by a VAP (operator not allowed).
 
 ## Running tests

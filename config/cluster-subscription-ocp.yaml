@@ -1,10 +1,10 @@
 # ConfigMap used as param for operator-subscription-matches-cluster policy.
 # Use this when the cluster is subscribed as OpenShift Container Platform (OCP).
-# Create in the same namespace as the ValidatingAdmissionPolicyBinding (e.g. default or openshift-config).
+# Create in namespace operator-subscription (paramRef.namespace in the binding must match).
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-subscription-type
-  namespace: default
+  namespace: operator-subscription
 data:
   subscriptionType: "OpenShift Container Platform"

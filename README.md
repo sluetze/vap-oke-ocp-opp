@@ -38,9 +38,10 @@ Feature differences between OKE, OCP, and OPP are taken from Red Hat’s officia
 
 2. **Optional – enforce cluster subscription type:**
 
-   Create the ConfigMap that describes your cluster’s subscription (choose one):
+   Create the namespace and the ConfigMap that describes your cluster’s subscription (choose one):
 
    ```bash
+   kubectl create namespace operator-subscription --dry-run=client -o yaml | kubectl apply -f -
    # OKE
    kubectl apply -f config/cluster-subscription-oke.yaml
 
@@ -58,7 +59,7 @@ Feature differences between OKE, OCP, and OPP are taken from Red Hat’s officia
    kubectl apply -f bindings/operator-subscription-matches-cluster-binding.yaml
    ```
 
-   The binding’s `paramRef` must point to the ConfigMap name/namespace you used (default: `cluster-subscription-type` in `default`).
+   The binding’s `paramRef` points to the ConfigMap `cluster-subscription-type` in namespace `operator-subscription`. Ensure that namespace exists before applying the ConfigMap.
 
 ## Cluster subscription hierarchy
 
