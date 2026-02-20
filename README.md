@@ -4,6 +4,16 @@ Kubernetes [Validating Admission Policies (VAPs)](https://kubernetes.io/docs/ref
 
 This ensures only operators that are entitled for your cluster’s subscription can be installed via OLM.
 
+---
+
+> **Limitations and caveats**
+>
+> - **Operator metadata is not guaranteed.** This approach assumes operators declare `operators.openshift.io/valid-subscription` in their CSV. In practice, not all operators might do so correctly, and the data can be missing, outdated, or incorrect. This policy is the best available mechanism for OKE/OCP/OPP subscription checks and should catch most cases, but it cannot be relied on as a complete guarantee.
+>
+> - **Cluster subscription type is not exposed by the platform.** OpenShift does not expose the cluster’s subscription type (OKE vs OCP vs OPP) in the API. Therefore the second policy requires a **ConfigMap** (provided by you) that states the current subscription. You must create and maintain this ConfigMap yourself; the CEL expressions may be reused as-is or with small changes (e.g. in OpenShift) once the subscription source is defined.
+
+---
+
 ## Source
 
 Feature differences between OKE, OCP, and OPP are taken from Red Hat’s official documentation:
@@ -117,10 +127,10 @@ Abbreviated from [Red Hat OKE about](https://docs.redhat.com/en/documentation/op
 
 OPP builds on OCP and typically bundles:
 
-- Red Hat Advanced Cluster Management for Kubernetes  
-- Red Hat Advanced Cluster Security for Kubernetes  
-- Red Hat Quay  
-- Red Hat OpenShift Data Foundation Essentials  
+- Red Hat Advanced Cluster Management for Kubernetes
+- Red Hat Advanced Cluster Security for Kubernetes
+- Red Hat Quay
+- Red Hat OpenShift Data Foundation Essentials
 
 Any operator that is valid for OCP is valid for OPP from a subscription perspective; OPP adds more capabilities.
 
