@@ -27,7 +27,7 @@ spec:
     # OKE cluster: only OKE allowed. OCP cluster: OKE or OCP. OPP cluster: OKE, OCP, or OPP.
     - expression: |
         params == null || params.data == null || !("subscriptionType" in params.data) ||
-        !has(object.metadata.annotations) || !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
+        !has(object.metadata) || !has(object.metadata.annotations) || !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
         (params.data.subscriptionType == "OpenShift Kubernetes Engine" &&
           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"')) ||
         (params.data.subscriptionType == "OpenShift Container Platform" &&
