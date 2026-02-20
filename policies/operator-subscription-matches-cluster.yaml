@@ -1,0 +1,47 @@
+# ValidatingAdmissionPolicy: When cluster subscription type is provided via param
+# (ConfigMap), the CSV's valid-subscription list must include a type allowed for
+# that cluster. Hierarchy: OKE cluster allows only OKE; OCP allows OKE or OCP;
+# OPP allows OKE, OCP, or OPP.
+#
+# Requires a ConfigMap param with key "subscriptionType" and value one of:
+#   - "OpenShift Kubernetes Engine"
+#   - "OpenShift Container Platform"
+#   - "OpenShift Platform Plus"
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: operator-subscription-matches-cluster
+  annotations:
+    description: "Ensures CSV valid-subscription includes a type allowed for cluster (OKE/OCP/OPP hierarchy)."
+spec:
+  failurePolicy: Fail
+  paramKind:
+    apiVersion: v1
+    kind: ConfigMap
+  matchConditions:
+    - name: is-csv
+      expression: "object.kind == 'ClusterServiceVersion'"
+  validations:
+    # If param or CSV annotation is missing, allow. If both present, CSV must list a subscription allowed for cluster.
+    # OKE cluster: only OKE allowed. OCP cluster: OKE or OCP. OPP cluster: OKE, OCP, or OPP.
+    - expression: |
+        params == null || params.data == null || !("subscriptionType" in params.data) ||
+        !has(object.metadata.annotations) || !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
+        (params.data.subscriptionType == "OpenShift Kubernetes Engine" &&
+          object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"')) ||
+        (params.data.subscriptionType == "OpenShift Container Platform" &&
+          (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
+           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"'))) ||
+        (params.data.subscriptionType == "OpenShift Platform Plus" &&
+          (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
+           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"') ||
+           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Platform Plus"')))
+      message: "Operator valid-subscription does not include a type allowed for this cluster. OKE allows only OKE; OCP allows OKE or OCP; OPP allows OKE, OCP, or OPP."
+      reason: Forbidden
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["operators.coreos.com"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["clusterserviceversions"]

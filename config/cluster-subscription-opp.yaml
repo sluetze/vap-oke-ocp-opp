@@ -1,0 +1,9 @@
+# ConfigMap used as param for operator-subscription-matches-cluster policy.
+# Use this when the cluster is subscribed as OpenShift Platform Plus (OPP).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-subscription-type
+  namespace: default
+data:
+  subscriptionType: "OpenShift Platform Plus"

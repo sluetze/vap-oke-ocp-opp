@@ -1,0 +1,29 @@
+# Test fixture: CSV with valid-subscription listing only OPP (OPP includes OCP and OKE).
+# Valid hierarchy: OKE,OCP,OPP | OCP,OPP | OPP only.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator-opp-only.v1.0.0
+  annotations:
+    operators.openshift.io/valid-subscription: '["OpenShift Platform Plus"]'
+spec:
+  displayName: Test Operator OPP only
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator-opp-only
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator-opp-only
+            template:
+              metadata:
+                labels:
+                  app: test-operator-opp-only
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment

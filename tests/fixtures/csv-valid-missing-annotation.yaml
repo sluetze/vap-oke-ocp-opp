@@ -1,0 +1,27 @@
+# Test fixture: CSV without operators.openshift.io/valid-subscription. Valid — missing annotation allows installation.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator-no-subscription.v1.0.0
+  annotations: {}
+spec:
+  displayName: Test Operator No Subscription
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator-no-subscription
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator-no-subscription
+            template:
+              metadata:
+                labels:
+                  app: test-operator-no-subscription
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment

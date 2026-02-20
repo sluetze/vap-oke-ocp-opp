@@ -1,0 +1,20 @@
+# Binds operator-subscription-matches-cluster policy and passes cluster subscription type via ConfigMap.
+# Create the ConfigMap (cluster-subscription-type) in default namespace; paramRef.namespace must match.
+# Apply one of config/cluster-subscription-oke.yaml, config/cluster-subscription-ocp.yaml, or config/cluster-subscription-opp.yaml first.
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicyBinding
+metadata:
+  name: operator-subscription-matches-cluster-binding
+spec:
+  policyName: operator-subscription-matches-cluster
+  validationActions: ["Deny"]
+  paramRef:
+    name: cluster-subscription-type
+    namespace: default
+    parameterNotFoundAction: Allow
+  matchResources:
+    resourceRules:
+      - apiGroups: ["operators.coreos.com"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["clusterserviceversions"]

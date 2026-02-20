@@ -1,0 +1,36 @@
+# ValidatingAdmissionPolicy: When ClusterServiceVersion has operators.openshift.io/valid-subscription,
+# it must list at least one of OKE, OCP, or OPP. If the annotation is missing, the operator is allowed.
+# See Red Hat OKE about: https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/overview/oke-about
+#
+# When annotation is present, this policy enforces:
+# 1. The value is non-empty.
+# 2. At least one of: OpenShift Kubernetes Engine, OpenShift Container Platform, OpenShift Platform Plus.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingAdmissionPolicy
+metadata:
+  name: operator-valid-subscription
+  annotations:
+    description: "When present, valid-subscription must list at least one of OKE/OCP/OPP; missing annotation allows installation."
+spec:
+  failurePolicy: Fail
+  matchConditions:
+    - name: is-csv
+      expression: "object.kind == 'ClusterServiceVersion'"
+  validations:
+    # If annotation is missing, allow. If present, require non-empty and at least one allowed subscription.
+    - expression: |
+        !has(object.metadata) || !has(object.metadata.annotations) ||
+        !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
+        (size(object.metadata.annotations["operators.openshift.io/valid-subscription"]) > 0 &&
+         (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
+          object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"') ||
+          object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Platform Plus"')))
+      message: "When operators.openshift.io/valid-subscription is set, it must be non-empty and include at least one of: OpenShift Kubernetes Engine, OpenShift Container Platform, OpenShift Platform Plus"
+      reason: Invalid
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ["operators.coreos.com"]
+        apiVersions: ["v1alpha1"]
+        operations: ["CREATE", "UPDATE"]
+        resources: ["clusterserviceversions"]

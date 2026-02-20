@@ -1,0 +1,28 @@
+# Test fixture: CSV with valid-subscription that has no allowed value (only unknown product). Should FAIL.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator-unknown-subscription.v1.0.0
+  annotations:
+    operators.openshift.io/valid-subscription: '["Some Other Product"]'
+spec:
+  displayName: Test Operator Unknown Subscription
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator-unknown-subscription
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator-unknown-subscription
+            template:
+              metadata:
+                labels:
+                  app: test-operator-unknown-subscription
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment

@@ -1,0 +1,28 @@
+# Test fixture: CSV with empty valid-subscription. Should FAIL.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator-empty-subscription.v1.0.0
+  annotations:
+    operators.openshift.io/valid-subscription: ''
+spec:
+  displayName: Test Operator Empty Subscription
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator-empty-subscription
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator-empty-subscription
+            template:
+              metadata:
+                labels:
+                  app: test-operator-empty-subscription
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment

@@ -1,0 +1,28 @@
+# Test fixture: CSV with valid-subscription listing all three (OKE, OCP, OPP). Should PASS.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator.v1.0.0
+  annotations:
+    operators.openshift.io/valid-subscription: '["OpenShift Kubernetes Engine", "OpenShift Container Platform", "OpenShift Platform Plus"]'
+spec:
+  displayName: Test Operator
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator
+            template:
+              metadata:
+                labels:
+                  app: test-operator
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment
