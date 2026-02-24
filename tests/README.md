@@ -1,10 +1,12 @@
 # Test cases for operator subscription VAPs
 
-## Subscription hierarchy (cluster allows)
+## Subscription list (cluster allows)
 
-- **OKE cluster**: Only operators that list **OpenShift Kubernetes Engine** in `valid-subscription` are allowed.
-- **OCP cluster**: Operators that list **OpenShift Kubernetes Engine** or **OpenShift Container Platform** are allowed.
-- **OPP cluster**: Operators that list **OpenShift Kubernetes Engine**, **OpenShift Container Platform**, or **OpenShift Platform Plus** are allowed.
+The cluster’s allowed subscriptions are configured via a ConfigMap list (`validSubscription.0`, `validSubscription.1`, …):
+
+- **OKE cluster**: List contains only **OpenShift Kubernetes Engine**.
+- **OCP cluster**: List contains **OpenShift Kubernetes Engine** and **OpenShift Container Platform**.
+- **OPP cluster**: List contains **OpenShift Kubernetes Engine**, **OpenShift Container Platform**, and **OpenShift Platform Plus**.
 
 Missing `operators.openshift.io/valid-subscription` annotation always allows installation. `valid-subscription: none` means no subscription required and is allowed on any cluster. When present and not `none`, the value must be non-empty and list at least one of OKE, OCP, OPP (enforced by `operator-valid-subscription`).
 

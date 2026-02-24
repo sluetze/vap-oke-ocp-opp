@@ -1,19 +1,18 @@
-# ValidatingAdmissionPolicy: When cluster subscription type is provided via param
-# (ConfigMap), the CSV's valid-subscription list must include a type allowed for
-# that cluster. Hierarchy: OKE cluster allows only OKE; OCP allows OKE or OCP;
-# OPP allows OKE, OCP, or OPP.
+# ValidatingAdmissionPolicy: When a list of allowed subscription names is provided
+# via ConfigMap param, the CSV's valid-subscription annotation must include at
+# least one of those names.
 #
-# Requires a ConfigMap param with key "subscriptionType" and value one of:
-#   - "OpenShift Kubernetes Engine"
-#   - "OpenShift Container Platform"
-#   - "OpenShift Platform Plus"
+# ConfigMap must have keys validSubscription.0, validSubscription.1, ... with
+# values being the allowed subscription names (e.g. "OpenShift Kubernetes Engine",
+# "Red Hat Trusted Profile Analyzer"). The list is the set of subscriptions
+# allowed for this cluster.
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingAdmissionPolicy
 metadata:
   name: operator-subscription-matches-cluster
   annotations:
-    description: "Ensures CSV valid-subscription includes a type allowed for cluster (OKE/OCP/OPP hierarchy)."
+    description: "Ensures CSV valid-subscription includes at least one subscription from the cluster's allowed list (ConfigMap)."
 spec:
   failurePolicy: Fail
   paramKind:
@@ -23,23 +22,15 @@ spec:
     - name: is-csv
       expression: "object.kind == 'ClusterServiceVersion'"
   validations:
-    # If param or CSV annotation is missing, allow. If both present, CSV must list a subscription allowed for cluster.
-    # valid-subscription "none" means no subscription required — always allow. OKE/OCP/OPP hierarchy as below.
+    # Allow if: no param/list, no validSubscription.* keys, no CSV annotation, valid-subscription is "none", or CSV lists at least one allowed subscription.
     - expression: |
-        params == null || params.data == null || !("subscriptionType" in params.data) ||
+        params == null || params.data == null || size(params.data) == 0 ||
+        !params.data.exists(k, k.startsWith("validSubscription.")) ||
         !has(object.metadata) || !has(object.metadata.annotations) || !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
         object.metadata.annotations["operators.openshift.io/valid-subscription"] == "none" ||
         object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"none"') ||
-        (params.data.subscriptionType == "OpenShift Kubernetes Engine" &&
-          object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"')) ||
-        (params.data.subscriptionType == "OpenShift Container Platform" &&
-          (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
-           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"'))) ||
-        (params.data.subscriptionType == "OpenShift Platform Plus" &&
-          (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
-           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"') ||
-           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Platform Plus"')))
-      message: "Operator valid-subscription does not include a type allowed for this cluster. OKE allows only OKE; OCP allows OKE or OCP; OPP allows OKE, OCP, or OPP."
+        params.data.exists(k, k.startsWith("validSubscription.") && object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"' + params.data[k] + '"'))
+      message: "Operator valid-subscription does not include any subscription allowed for this cluster (see ConfigMap validSubscription.*)."
       reason: Forbidden
   matchConstraints:
     resourceRules:

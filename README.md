@@ -25,7 +25,7 @@ Feature differences between OKE, OCP, and OPP are taken from Red Hat’s officia
 | Policy | Purpose |
 |--------|--------|
 | **operator-valid-subscription** | When a CSV has the `operators.openshift.io/valid-subscription` annotation, its value must be a non-empty list containing at least one of: `OpenShift Kubernetes Engine`, `OpenShift Container Platform`, `OpenShift Platform Plus`. **If the annotation is missing, the operator is allowed.** |
-| **operator-subscription-matches-cluster** | (Optional) When a cluster subscription type is supplied via a ConfigMap param and the CSV has `valid-subscription`, the CSV must list a type allowed for that cluster: **OKE cluster** allows only OKE; **OCP cluster** allows OKE or OCP; **OPP cluster** allows OKE, OCP, or OPP. **If the CSV has no `valid-subscription` annotation, the operator is allowed.** |
+| **operator-subscription-matches-cluster** | (Optional) When a **list** of allowed subscription names is supplied via a ConfigMap param and the CSV has `valid-subscription`, the CSV must list at least one subscription from that list. **If the CSV has no `valid-subscription` annotation, the operator is allowed.** Configure the list (e.g. OKE only; OKE + OCP; or add products like "Red Hat Trusted Profile Analyzer"). |
 
 ## Quick start
 
@@ -36,19 +36,17 @@ Feature differences between OKE, OCP, and OPP are taken from Red Hat’s officia
    kubectl apply -f bindings/operator-valid-subscription-binding.yaml
    ```
 
-2. **Optional – enforce cluster subscription type:**
+2. **Optional – enforce cluster subscription list:**
 
-   Create the namespace and the ConfigMap that describes your cluster’s subscription (choose one):
+   Create the namespace and a ConfigMap that lists the subscription names allowed for your cluster. The ConfigMap uses keys `validSubscription.0`, `validSubscription.1`, … with values being the exact subscription names (e.g. `"OpenShift Kubernetes Engine"`, `"Red Hat Trusted Profile Analyzer"`). You can use one of the provided configs or define your own list:
 
    ```bash
    kubectl create namespace operator-subscription --dry-run=client -o yaml | kubectl apply -f -
-   # OKE
+   # Predefined: OKE only
    kubectl apply -f config/cluster-subscription-oke.yaml
-
-   # OCP
+   # Predefined: OKE + OCP
    kubectl apply -f config/cluster-subscription-ocp.yaml
-
-   # OPP
+   # Predefined: OKE + OCP + OPP
    kubectl apply -f config/cluster-subscription-opp.yaml
    ```
 
@@ -61,13 +59,18 @@ Feature differences between OKE, OCP, and OPP are taken from Red Hat’s officia
 
    The binding’s `paramRef` points to the ConfigMap `cluster-subscription-type` in namespace `operator-subscription`. Ensure that namespace exists before applying the ConfigMap.
 
-## Cluster subscription hierarchy
+## Allowed subscription list (ConfigMap)
 
-When the second policy is used with a cluster subscription ConfigMap:
+The second policy takes a **list** of allowed subscription names from the ConfigMap. Conceptually the list might look like:
 
-- **OKE** — Only operators whose `valid-subscription` includes **OpenShift Kubernetes Engine** are allowed.
-- **OCP** — Operators whose `valid-subscription` includes **OpenShift Kubernetes Engine** or **OpenShift Container Platform** are allowed.
-- **OPP** — Operators whose `valid-subscription` includes **OpenShift Kubernetes Engine**, **OpenShift Container Platform**, or **OpenShift Platform Plus** are allowed.
+`["Red Hat Trusted Profile Analyzer", "OpenShift Kubernetes Engine", "OpenShift Container Platform"]`
+
+Because CEL cannot parse JSON, the ConfigMap represents this list as key-value pairs: keys `validSubscription.0`, `validSubscription.1`, `validSubscription.2`, … and values the subscription name strings. A CSV is allowed if its `operators.openshift.io/valid-subscription` annotation (JSON array string) contains at least one of those names.
+
+- **OKE** — Use a list with only **OpenShift Kubernetes Engine** (see `config/cluster-subscription-oke.yaml`).
+- **OCP** — Use a list with **OpenShift Kubernetes Engine** and **OpenShift Container Platform**.
+- **OPP** — Use a list with **OpenShift Kubernetes Engine**, **OpenShift Container Platform**, and **OpenShift Platform Plus**.
+- You can add any other products (e.g. **Red Hat Trusted Profile Analyzer**) by adding more `validSubscription.N` entries.
 
 ## Requirements
 

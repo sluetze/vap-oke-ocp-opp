@@ -1,9 +1,10 @@
 # ConfigMap used as param for operator-subscription-matches-cluster policy.
-# Use this when the cluster is subscribed as OpenShift Kubernetes Engine (OKE).
+# List of subscription names allowed for this cluster (OKE: only OKE).
+# Add more validSubscription.N entries to allow more products, e.g. "Red Hat Trusted Profile Analyzer".
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-subscription-type
   namespace: operator-subscription
 data:
-  subscriptionType: "OpenShift Kubernetes Engine"
+  validSubscription.0: "OpenShift Kubernetes Engine"

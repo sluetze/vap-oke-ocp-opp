@@ -1,9 +1,12 @@
 # ConfigMap used as param for operator-subscription-matches-cluster policy.
-# Use this when the cluster is subscribed as OpenShift Platform Plus (OPP).
+# List of subscription names allowed for this cluster (OPP: OKE, OCP, or OPP).
+# Add more validSubscription.N entries to allow more products, e.g. "Red Hat Trusted Profile Analyzer".
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-subscription-type
   namespace: operator-subscription
 data:
-  subscriptionType: "OpenShift Platform Plus"
+  validSubscription.0: "OpenShift Kubernetes Engine"
+  validSubscription.1: "OpenShift Container Platform"
+  validSubscription.2: "OpenShift Platform Plus"
