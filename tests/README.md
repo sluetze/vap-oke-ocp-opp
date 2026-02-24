@@ -6,7 +6,7 @@
 - **OCP cluster**: Operators that list **OpenShift Kubernetes Engine** or **OpenShift Container Platform** are allowed.
 - **OPP cluster**: Operators that list **OpenShift Kubernetes Engine**, **OpenShift Container Platform**, or **OpenShift Platform Plus** are allowed.
 
-Missing `operators.openshift.io/valid-subscription` annotation always allows installation. When present, the value must be non-empty and list at least one of OKE, OCP, OPP (enforced by `operator-valid-subscription`).
+Missing `operators.openshift.io/valid-subscription` annotation always allows installation. `valid-subscription: none` means no subscription required and is allowed on any cluster. When present and not `none`, the value must be non-empty and list at least one of OKE, OCP, OPP (enforced by `operator-valid-subscription`).
 
 ## Test runs
 
@@ -17,6 +17,7 @@ The test script runs **three suites**, one per cluster subscription type (OKE, O
 | Fixture | valid-subscription | OKE cluster | OCP cluster | OPP cluster |
 |--------|--------------------|-------------|-------------|-------------|
 | `csv-valid-all-three.yaml` | OKE, OCP, OPP | PASS | PASS | PASS |
+| `csv-valid-subscription-none.yaml` | none | PASS | PASS | PASS |
 | `csv-valid-ocp-opp-only.yaml` | OCP, OPP | FAIL | PASS | PASS |
 | `csv-valid-opp-only.yaml` | OPP only | FAIL | FAIL | PASS |
 | `csv-valid-missing-annotation.yaml` | (none) | PASS | PASS | PASS |

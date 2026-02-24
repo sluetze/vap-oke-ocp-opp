@@ -1,0 +1,29 @@
+# Test fixture: CSV with operators.openshift.io/valid-subscription: none.
+# No subscription required — must PASS on OKE, OCP, and OPP clusters.
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: test-operator-subscription-none.v1.0.0
+  annotations:
+    operators.openshift.io/valid-subscription: "none"
+spec:
+  displayName: Test Operator Subscription None
+  version: 1.0.0
+  install:
+    spec:
+      deployments:
+        - name: test-operator-subscription-none
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: test-operator-subscription-none
+            template:
+              metadata:
+                labels:
+                  app: test-operator-subscription-none
+              spec:
+                containers:
+                  - name: operator
+                    image: no-op
+    strategy: deployment

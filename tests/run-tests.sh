@@ -50,8 +50,9 @@ run_oke_tests() {
   echo ""
   echo "========== Cluster subscription: OKE (only OKE in valid-subscription allowed) =========="
   oc apply -f "$CONFIG/cluster-subscription-oke.yaml"
-  # OKE cluster: only csv-valid-all-three (has OKE) and csv-valid-missing-annotation pass
+  # OKE cluster: only csv-valid-all-three (has OKE), csv-valid-missing-annotation, and csv-valid-subscription-none pass
   apply_expect_pass "$FIXTURES/csv-valid-all-three.yaml" || exit 1
+  apply_expect_pass "$FIXTURES/csv-valid-subscription-none.yaml" || exit 1  # valid-subscription: none always allowed
   apply_expect_fail "$FIXTURES/csv-valid-ocp-opp-only.yaml" || exit 1   # no OKE
   apply_expect_fail "$FIXTURES/csv-valid-opp-only.yaml" || exit 1      # no OKE
   apply_expect_pass "$FIXTURES/csv-valid-missing-annotation.yaml" || exit 1
@@ -64,6 +65,7 @@ run_ocp_tests() {
   echo "========== Cluster subscription: OCP (OKE or OCP in valid-subscription allowed) =========="
   oc apply -f "$CONFIG/cluster-subscription-ocp.yaml"
   apply_expect_pass "$FIXTURES/csv-valid-all-three.yaml" || exit 1
+  apply_expect_pass "$FIXTURES/csv-valid-subscription-none.yaml" || exit 1  # valid-subscription: none always allowed
   apply_expect_pass "$FIXTURES/csv-valid-ocp-opp-only.yaml" || exit 1   # has OCP
   apply_expect_fail "$FIXTURES/csv-valid-opp-only.yaml" || exit 1      # only OPP, no OKE/OCP
   apply_expect_pass "$FIXTURES/csv-valid-missing-annotation.yaml" || exit 1
@@ -76,6 +78,7 @@ run_opp_tests() {
   echo "========== Cluster subscription: OPP (OKE, OCP, or OPP in valid-subscription allowed) =========="
   oc apply -f "$CONFIG/cluster-subscription-opp.yaml"
   apply_expect_pass "$FIXTURES/csv-valid-all-three.yaml" || exit 1
+  apply_expect_pass "$FIXTURES/csv-valid-subscription-none.yaml" || exit 1  # valid-subscription: none always allowed
   apply_expect_pass "$FIXTURES/csv-valid-ocp-opp-only.yaml" || exit 1
   apply_expect_pass "$FIXTURES/csv-valid-opp-only.yaml" || exit 1
   apply_expect_pass "$FIXTURES/csv-valid-missing-annotation.yaml" || exit 1

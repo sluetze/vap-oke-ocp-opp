@@ -24,10 +24,12 @@ spec:
       expression: "object.kind == 'ClusterServiceVersion'"
   validations:
     # If param or CSV annotation is missing, allow. If both present, CSV must list a subscription allowed for cluster.
-    # OKE cluster: only OKE allowed. OCP cluster: OKE or OCP. OPP cluster: OKE, OCP, or OPP.
+    # valid-subscription "none" means no subscription required — always allow. OKE/OCP/OPP hierarchy as below.
     - expression: |
         params == null || params.data == null || !("subscriptionType" in params.data) ||
         !has(object.metadata) || !has(object.metadata.annotations) || !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
+        object.metadata.annotations["operators.openshift.io/valid-subscription"] == "none" ||
+        object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"none"') ||
         (params.data.subscriptionType == "OpenShift Kubernetes Engine" &&
           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"')) ||
         (params.data.subscriptionType == "OpenShift Container Platform" &&

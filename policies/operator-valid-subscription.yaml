@@ -3,7 +3,8 @@
 # See Red Hat OKE about: https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html/overview/oke-about
 #
 # When annotation is present, this policy enforces:
-# 1. The value is non-empty.
+# - "none" means no subscription required — allow.
+# 1. Otherwise the value must be non-empty.
 # 2. At least one of: OpenShift Kubernetes Engine, OpenShift Container Platform, OpenShift Platform Plus.
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -18,10 +19,12 @@ spec:
     - name: is-csv
       expression: "object.kind == 'ClusterServiceVersion'"
   validations:
-    # If annotation is missing, allow. If present, require non-empty and at least one allowed subscription.
+    # If annotation is missing, allow. If "none", allow (no subscription required). Otherwise require non-empty and at least one allowed subscription.
     - expression: |
         !has(object.metadata) || !has(object.metadata.annotations) ||
         !("operators.openshift.io/valid-subscription" in object.metadata.annotations) ||
+        object.metadata.annotations["operators.openshift.io/valid-subscription"] == "none" ||
+        object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"none"') ||
         (size(object.metadata.annotations["operators.openshift.io/valid-subscription"]) > 0 &&
          (object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Kubernetes Engine"') ||
           object.metadata.annotations["operators.openshift.io/valid-subscription"].contains('"OpenShift Container Platform"') ||
